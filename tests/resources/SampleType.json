@@ -1,0 +1,9 @@
+{
+    "useTags": true,
+    "timestampPrecision": "hour",
+    "dataFileName": "content",
+    "schema": [
+        { "key": "ts", "type": "timestamp", "isTimestamp": true },
+        { "key": "value", "type": "number", "isRequired": true }
+    ]
+}

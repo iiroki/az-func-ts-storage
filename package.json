@@ -1,0 +1,29 @@
+{
+  "name": "az-func-ts-storage",
+  "version": "0.0.1",
+  "description": "",
+  "main": "dist/src/functions/*.js",
+  "scripts": {
+    "start": "func start",
+    "prestart": "npm run clean && npm run build",
+    "build": "tsc",
+    "watch": "tsc -w",
+    "clean": "rimraf dist",
+    "lint": "eslint . --ext .ts"
+  },
+  "dependencies": {
+    "@azure/functions": "^4.0.0-alpha",
+    "@azure/storage-blob": "^12.15.0",
+    "zod": "^3.21.4"
+  },
+  "devDependencies": {
+    "@tsconfig/node18": "^18.2.0",
+    "@types/node": "^18.11.9",
+    "@typescript-eslint/eslint-plugin": "^6.2.0",
+    "@typescript-eslint/parser": "^6.2.0",
+    "eslint": "^8.45.0",
+    "eslint-plugin-import": "^2.27.5",
+    "rimraf": "^5.0.1",
+    "typescript": "^5.1.6"
+  }
+}
