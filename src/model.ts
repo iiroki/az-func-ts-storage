@@ -18,4 +18,4 @@ export type DataTypeSchemaItem = {
   readonly isTimestamp: boolean
 }
 
-export type DataTypeSchemaItemType = 'number' | 'string' | 'timestamp' | 'json'
+export type DataTypeSchemaItemType = 'int' | 'float' | 'string' | 'timestamp'

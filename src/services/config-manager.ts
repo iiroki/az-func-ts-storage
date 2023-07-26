@@ -9,7 +9,7 @@ const zDataTypeConfiguration = z.object({
   dataFileName: z.string().default('data'),
   schema: z.array(z.object({
     key: z.string(),
-    type: z.union([z.literal('number'), z.literal('string'), z.literal('timestamp'), z.literal('json')]),
+    type: z.union([z.literal('int'), z.literal('float'), z.literal('string'), z.literal('timestamp')]),
     isRequired: z.boolean().default(true),
     isTimestamp: z.boolean().default(false)
   }))
@@ -26,12 +26,14 @@ export class ConfigManager {
   async getConfigForType(type: string): Promise<DataTypeConfiguration | null> {
     const cached = this.cache.get(type)
     if (cached) {
-      console.log('!!! Cache')
       return cached
     }
 
-    console.log('!!! Read')
     const raw = await this.getRawFromStorage(type)
+    if (!raw) {
+      return null // TODO: Handle not found
+    }
+
     const config: DataTypeConfiguration = zDataTypeConfiguration.parse(raw)
     this.cache.set(type, config)
     return config
