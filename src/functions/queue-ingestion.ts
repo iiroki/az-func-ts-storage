@@ -19,3 +19,4 @@ app.storageQueue(
   'QueueIngestion',
   { connection: STORAGE_CONNECTION_ENV, queueName: STORAGE_INGESTION_QUEUE, handler }
 )
+

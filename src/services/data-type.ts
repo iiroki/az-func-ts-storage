@@ -18,18 +18,18 @@ export class DataTypeService {
       return cached
     }
 
-    const raw = await this.getRawFromStorage(type)
+    const raw = await this.fetchRawConfigFromStorage(type)
     if (!raw) {
       return null // TODO: Handle not found
     }
 
     const config: DataTypeConfiguration = zDataTypeConfiguration.parse(raw)
     const container = this.createContainer(type, config)
-    this.cache.set(type, container)
+    this.cache.set(container.type, container)
     return container
   }
 
-  private async getRawFromStorage(type: string): Promise<object | null> {
+  private async fetchRawConfigFromStorage(type: string): Promise<object | null> {
     const blob = this.containerClient.getBlobClient(this.getBlobPath(type))
     const exists = await blob.exists()
     if (!exists) {
