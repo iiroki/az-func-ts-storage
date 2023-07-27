@@ -18,7 +18,7 @@ export type BlobPathParams = {
   readonly includeMinutes?: boolean
 }
 
-export const append = async (params: StorageWriteParams): Promise<void> => {
+export const appendToBlob = async (params: StorageWriteParams): Promise<void> => {
   const { containerClient, blobPath, content } = params
   const client = containerClient.getAppendBlobClient(blobPath)
   await client.createIfNotExists()

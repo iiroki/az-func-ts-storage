@@ -11,7 +11,7 @@ export const getTimestampHour = (timestamp: Date): Date => {
   return new Date(timestamp.getFullYear(), timestamp.getMonth(), timestamp.getDate(), timestamp.getHours())
 }
 
-export const divideByHour = <T>(items: T[], timestampExtractor: TimestampExtractor<T>): [Date, T[]][] => {
+export const divideByTimestampHour = <T>(items: T[], timestampExtractor: TimestampExtractor<T>): [Date, T[]][] => {
   const dayMap: Map<number, T[]> = new Map()
 
   items.forEach(i => {
