@@ -1,7 +1,7 @@
 import { BlobServiceClient, ContainerClient } from '@azure/storage-blob'
 import { z } from 'zod'
 import { zDataTypeConfiguration, zFloat, zInt, zString, zTimestamp } from '../common/validation'
-import { STORAGE_CONNECTION, STORAGE_CONFIGURATION_CONTAINER } from '../configuration'
+import { STORAGE_CONNECTION, STORAGE_CONFIGURATION_CONTAINER } from '../environment'
 import { DataTypeConfiguration, DataTypeContainer, DataTypeSchemaItem, DataTypeSchemaValidator } from '../model'
 
 export class DataTypeService {

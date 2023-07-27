@@ -1,22 +1,22 @@
-import { eachDayOfInterval } from 'date-fns'
+import { eachHourOfInterval } from 'date-fns'
 
 export interface TimestampExtractor<T> { (item: T): Date }
 
-export const splitTimespanIntoDays = (from: Date, to: Date): Date[] => {
-  const start = getTimestampDay(from)
-  return eachDayOfInterval({ start, end: to })
+export const splitTimespanIntoHours = (from: Date, to: Date): Date[] => {
+  const start = getTimestampHour(from)
+  return eachHourOfInterval({ start, end: to })
 }
 
-export const getTimestampDay = (timestamp: Date): Date => {
-  return new Date(timestamp.getFullYear(), timestamp.getMonth(), timestamp.getDate())
+export const getTimestampHour = (timestamp: Date): Date => {
+  return new Date(timestamp.getFullYear(), timestamp.getMonth(), timestamp.getDate(), timestamp.getHours())
 }
 
-export const divideByDay = <T>(items: T[], timestampExtractor: TimestampExtractor<T>): [Date, T[]][] => {
+export const divideByHour = <T>(items: T[], timestampExtractor: TimestampExtractor<T>): [Date, T[]][] => {
   const dayMap: Map<number, T[]> = new Map()
 
   items.forEach(i => {
     const ts = timestampExtractor(i)
-    const day = getTimestampDay(ts)
+    const day = getTimestampHour(ts)
     const existing = dayMap.get(day.getTime())
     if (existing) {
       existing.push(i)

@@ -1,8 +1,9 @@
-import { Readable } from 'stream'
 import { FunctionResult, InvocationContext, app } from '@azure/functions'
 import { BlobServiceClient } from '@azure/storage-blob'
 import { parseISO } from 'date-fns'
-import { divideByDay } from '../common/date'
+import { toCsvString } from '../common/csv'
+import { divideByHour } from '../common/date'
+import { toGzipBase64 } from '../common/gzip'
 import { StorageWriteParams, append, createBlobPath } from '../common/storage'
 import { zDataIngestion } from '../common/validation'
 import {
@@ -10,7 +11,7 @@ import {
   STORAGE_CONNECTION_ENV,
   STORAGE_DATA_CONTAINER,
   STORAGE_INGESTION_QUEUE
-} from '../configuration'
+} from '../environment'
 import { DataTypeService } from '../services/data-type'
 
 // Setup singletons for the instance:
@@ -33,11 +34,11 @@ const handler = async (message: unknown, _ctx: InvocationContext): Promise<Funct
   const { type, tag, data } = validator.parse(payload)
 
   // TODO: Divide by minute if defined so
-  const dataByDay = divideByDay(data, i => parseISO(i[dataTimestampIndex] as string))
+  const dataByDay = divideByHour(data, i => parseISO(i[dataTimestampIndex] as string))
 
-  const writeParams: StorageWriteParams[] = dataByDay.map(day => ({
+  const writeParams: Promise<StorageWriteParams>[] = dataByDay.map(async day => ({
     containerClient: storageContainerClient,
-    content: new Readable(),
+    content: await toGzipBase64(await toCsvString(day[1])),
     blobPath: createBlobPath({
       type,
       tag,
@@ -48,7 +49,8 @@ const handler = async (message: unknown, _ctx: InvocationContext): Promise<Funct
     })
   }))
 
-  const promises = writeParams.map(append)
+  const todo = await Promise.all(writeParams)
+  const promises = todo.map(append)
   await Promise.all(promises)
 }
 

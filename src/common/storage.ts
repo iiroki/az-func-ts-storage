@@ -6,7 +6,7 @@ export type StorageParams = {
 }
 
 export type StorageWriteParams =  StorageParams & {
-  readonly content: NodeJS.ReadableStream
+  readonly content: string | Buffer
 }
 
 export type BlobPathParams = {
@@ -19,10 +19,10 @@ export type BlobPathParams = {
 }
 
 export const append = async (params: StorageWriteParams): Promise<void> => {
-  const { containerClient, blobPath } = params
+  const { containerClient, blobPath, content } = params
   const client = containerClient.getAppendBlobClient(blobPath)
   await client.createIfNotExists()
-  // TODO: Append to blob
+  await client.appendBlock(content, content.length)
 }
 
 export const createBlobPath = (params: BlobPathParams): string => {

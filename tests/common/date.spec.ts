@@ -1,26 +1,27 @@
-import { divideByDay, getTimestampDay, splitTimespanIntoDays } from '../../src/common/date'
+import { divideByHour, getTimestampHour, splitTimespanIntoHours } from '../../src/common/date'
 
 describe('Date tests', () => {
-  it('getTimestampDay: OK', () => {
+  it('getTimestampHour: OK', () => {
     const date = new Date(2023, 1, 28, 18, 45, 12, 123)
-    const day = getTimestampDay(date)
+    const day = getTimestampHour(date)
     expect(day.getFullYear()).toBe(2023)
     expect(day.getMonth()).toBe(1)
     expect(day.getDate()).toBe(28)
-    expect(day.getHours()).toBe(0)
+    expect(day.getHours()).toBe(18)
     expect(day.getMinutes()).toBe(0)
     expect(day.getSeconds()).toBe(0)
     expect(day.getMilliseconds()).toBe(0)
   })
 
-  it('splitTimespanIntoDays: OK', () => {
-    const from = new Date(2023, 1, 28, 18, 45, 12, 123)
-    const to = new Date(2023, 2, 14, 21, 34, 43, 321)
-    const days = splitTimespanIntoDays(from, to)
-    expect(days).toHaveLength(15)
+  it('splitTimespanIntoHours: OK', () => {
+    const from = new Date(2023, 1, 28, 1, 45, 12, 123)
+    const to = new Date(2023, 1, 28, 10, 45, 12, 123)
+    const days = splitTimespanIntoHours(from, to)
+    expect(days).toHaveLength(10)
   })
 
-  it('divideByDay: OK', () => {
+  it('divideByHour: OK', () => {
+    // TODO: Fix days -> hours!
     const items = [
       { key: 'Day1_Item1', ts: new Date(2023, 1, 28, 18, 45, 12, 123) },
       { key: 'Day1_Item2', ts: new Date(2023, 1, 28, 19, 44, 12, 123) },
@@ -34,7 +35,7 @@ describe('Date tests', () => {
       { key: 'Day6_Item1', ts: new Date(2023, 3, 15, 18, 45, 12, 123) }
     ]
 
-    const divided = divideByDay(items, i => i.ts)
+    const divided = divideByHour(items, i => i.ts)
     expect(divided).toHaveLength(6)
     expect(divided[0][1]).toHaveLength(3)
     expect(divided[1][1]).toHaveLength(2)

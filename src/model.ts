@@ -13,8 +13,10 @@ export type DataTypeContainer = {
 export type DataIngestion = {
   readonly type: string
   readonly tag?: string
-  readonly data: unknown[][]
+  readonly data: DataBatch
 }
+
+export type DataBatch = unknown[][]
 
 export type DataTypeConfiguration = {
   readonly useTags: boolean
