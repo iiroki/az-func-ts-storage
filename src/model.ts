@@ -7,12 +7,13 @@ export type DataTypeContainer = {
   readonly type: string
   readonly config: DataTypeConfiguration
   readonly validator: DataTypeSchemaValidator
+  readonly dataTimestampIndex: number
 }
 
 export type DataIngestion = {
   readonly type: string
   readonly tag?: string
-  readonly data: unknown[]
+  readonly data: unknown[][]
 }
 
 export type DataTypeConfiguration = {

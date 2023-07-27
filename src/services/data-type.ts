@@ -46,7 +46,17 @@ export class DataTypeService {
   }
 
   private createContainer(type: string, config: DataTypeConfiguration): DataTypeContainer {
-    return { type, config, validator: this.createSchemaValidator(config) }
+    const timestampIndex = config.schema.findIndex(s => s.isTimestamp)
+    if (timestampIndex === -1) {
+      throw new Error(`Data type configuration has no timestamp: ${type} ${config.schema}`)
+    }
+
+    return {
+      type,
+      config,
+      validator: this.createSchemaValidator(config),
+      dataTimestampIndex: timestampIndex
+    }
   }
 
   private createSchemaValidator(config: DataTypeConfiguration): DataTypeSchemaValidator {

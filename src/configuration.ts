@@ -1,4 +1,4 @@
-const getFromEnv = (key: string, fallback: string | undefined = undefined) => {
+const getFromEnv = (key: string, fallback: string | undefined = undefined): string => {
   const value = process.env[key] ?? fallback
   if (!value) {
     throw new Error(`Environment variable must be defined: ${key}`)
@@ -10,4 +10,5 @@ const getFromEnv = (key: string, fallback: string | undefined = undefined) => {
 export const STORAGE_CONNECTION_ENV = 'STORAGE_CONNECTION'
 export const STORAGE_CONNECTION = getFromEnv(STORAGE_CONNECTION_ENV)
 export const STORAGE_INGESTION_QUEUE = getFromEnv('STORAGE_INGESTION_QUEUE', 'ingestion')
+export const STORAGE_DATA_CONTAINER = getFromEnv('STORAGE_DATA_CONTAINER', 'data')
 export const STORAGE_CONFIGURATION_CONTAINER = getFromEnv('STORAGE_CONFIGURATION_CONTAINER', 'configuration')
