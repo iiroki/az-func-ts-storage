@@ -20,7 +20,6 @@ export const ingest = async (payload: DataIngestion, ctx: DataIngestionContext):
   }
 
   const { config, validator, dataTimestampIndex } = dataType
-  const includeMinutes = config.blobPathTimestamp === 'minute'
   const { type, tag, data } = validator.parse(payload)
 
   // TODO: Divide by minute if defined so
@@ -32,10 +31,9 @@ export const ingest = async (payload: DataIngestion, ctx: DataIngestionContext):
     blobPath: createDataBlobPath({
       type,
       tag,
-      includeMinutes,
+      includeHours: config.blobPathTimestamp === 'hour',
       timestamp: day[0],
-      dataFileName: config.dataFileName,
-      fileExtension: 'csv.gz'
+      fileExt: '.csv.gz'
     })
   }))
 

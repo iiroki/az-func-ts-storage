@@ -8,7 +8,8 @@ Main features of **_Azure Functions Time Series Storage_** include:
     - (TODO) HTTP API for modifying data types
 - Data ingestion with Azure Queue Storage or HTTP API
 - HTTP API for querying data, tags and configurations (data types)
-- Hierarchical Azure Blob Storage directory structure.
+- Hierarchical Azure Blob Storage directory structure
+- Data blobs use gzip to save storage space.
 
 A detailed description of the features can be found under [Features](#features).
 

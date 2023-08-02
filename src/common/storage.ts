@@ -1,4 +1,4 @@
-import { AppendBlobClient, BlobDownloadResponseParsed, BlobServiceClient, ContainerClient } from '@azure/storage-blob'
+import { AppendBlobClient, BlobServiceClient, ContainerClient } from '@azure/storage-blob'
 import { STORAGE_CONNECTION, STORAGE_DATA_CONTAINER } from '../environment'
 import { DataClient } from '../model'
 
@@ -14,11 +14,12 @@ export type StorageWriteParams =  StorageParams & {
 export type BlobPathParams = {
   readonly type: string
   readonly timestamp: Date
-  readonly dataFileName: string
-  readonly fileExtension: string
   readonly tag?: string
-  readonly includeMinutes?: boolean
+  readonly includeHours?: boolean
+  readonly fileExt: string
 }
+
+export const DATA_FILE_NAME = 'data'
 
 export const createDataClient = (): ContainerClient => BlobServiceClient
   .fromConnectionString(STORAGE_CONNECTION)
@@ -35,7 +36,7 @@ export const readDataBlob = async (dataClient: DataClient, path: string): Promis
   getDataBlobClient(dataClient, path).downloadToBuffer()
 
 export const createDataBlobPath = (params: BlobPathParams): string => {
-  const { type, tag, timestamp, includeMinutes, dataFileName, fileExtension } = params
+  const { type, tag, timestamp, includeHours, fileExt } = params
   const parts = [`type=${type}`]
   if (tag) {
     parts.push(`tag=${tag}`)
@@ -45,15 +46,14 @@ export const createDataBlobPath = (params: BlobPathParams): string => {
   parts.push(...[
     `year=${timestamp.getUTCFullYear()}`,
     `month=${timestamp.getUTCMonth()}`,
-    `day=${timestamp.getUTCDate()}`,
-    `hour=${timestamp.getUTCHours()}`
+    `day=${timestamp.getUTCDate()}`
   ])
 
-  if (includeMinutes) {
-    parts.push(`minute=${timestamp.getUTCMinutes()}`)
+  if (includeHours) {
+    parts.push(`hour=${timestamp.getUTCHours()}`)
   }
 
-  parts.push(`${dataFileName}.${fileExtension}`)
+  parts.push(`${DATA_FILE_NAME}.${fileExt.startsWith('.') ? fileExt.slice(1) : fileExt}`)
   return parts.join('/')
 }
 

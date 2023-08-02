@@ -1,12 +1,13 @@
 import { HttpHandler, app } from '@azure/functions'
 import { parseISO } from 'date-fns'
+import { fromCsvString } from '../common/csv'
 import { splitTimespanIntoHours } from '../common/date'
+import { fromGzipBuffer } from '../common/gzip'
 import { createBadRequestResponse } from '../common/http'
 import { createDataBlobPath, createDataClient, dataBlobExists, readDataBlob } from '../common/storage'
 import { zDataRequestParams } from '../common/validation'
 import { API_TYPE_PARAM } from '../model'
 import { DataTypeService } from '../services/data-type'
-import { fromGzipBuffer } from '../common/gzip'
 
 const dataTypeService = DataTypeService.create()
 const dataClient = createDataClient()
@@ -37,37 +38,36 @@ const handler: HttpHandler = async (req, _ctx) => {
 
   const blobDates = dataType.config.blobPathTimestamp === 'hour'
     ? splitTimespanIntoHours(parseISO(from), parseISO(to))
-    : [] // TODO: Minutes
+    : [] // TODO: Day
 
-  const existingBlobPromises = blobDates
+  const existingDataBlobPromises = blobDates
     .map(timestamp => createDataBlobPath({
       tag,
       timestamp,
       type: dataType.type,
-      dataFileName: dataType.config.dataFileName,
-      fileExtension: 'csv.gz' // TODO: Configurable?
+      includeHours: dataType.config.blobPathTimestamp === 'hour',
+      fileExt: '.csv.gz'
     }))
     .map(path => ({ path, exists: dataBlobExists(dataClient, path) }))
 
   const dataPaths: string[] = []
-  for (const asd of existingBlobPromises) {
-    if (await asd.exists) {
-      dataPaths.push(asd.path)
+  for (const dataBlob of existingDataBlobPromises) {
+    if (await dataBlob.exists) {
+      dataPaths.push(dataBlob.path)
     }
   }
 
-  console.log('!!! Params:', validation.data)
   const dataPromises = dataPaths.map(path => readDataBlob(dataClient, path))
   const data = await Promise.all(dataPromises)
 
   // TODO: Handle with streams
+  const result = []
   for (const test of data) {
     const testStr = await fromGzipBuffer(test)
-    console.log('!!! Test:', testStr)
+    result.push(...await fromCsvString(testStr))
   }
 
-  // TODO
-  return { jsonBody: [] }
+  return { jsonBody: result }
 }
 
 app.http(
