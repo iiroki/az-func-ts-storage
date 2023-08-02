@@ -5,32 +5,37 @@ import { STORAGE_CONNECTION, STORAGE_CONFIGURATION_CONTAINER } from '../environm
 import { DataTypeConfiguration, DataTypeContainer, DataTypeSchemaItem, DataTypeSchemaValidator } from '../model'
 
 export class DataTypeService {
-  private readonly containerClient: ContainerClient
+  private readonly configurationContainerClient: ContainerClient
   private readonly cache: Map<string, DataTypeContainer> = new Map()
 
-  constructor(connection: string, container: string) {
-    this.containerClient = BlobServiceClient.fromConnectionString(connection).getContainerClient(container)
+  constructor(connection: string, container: string, private readonly useCache = false) {
+    this.configurationContainerClient = BlobServiceClient.fromConnectionString(connection).getContainerClient(container)
   }
 
   async get(type: string): Promise<DataTypeContainer | null> {
-    const cached = this.cache.get(type)
-    if (cached) {
-      return cached
+    if (this.useCache) {
+      const cached = this.cache.get(type)
+      if (cached) {
+        return cached
+      }
     }
 
-    const raw = await this.fetchRawConfigFromStorage(type)
+    const raw = await this.fetchRawFromStorage(type)
     if (!raw) {
       return null // TODO: Handle not found
     }
 
     const config: DataTypeConfiguration = zDataTypeConfiguration.parse(raw)
     const container = this.createContainer(type, config)
-    this.cache.set(container.type, container)
+    if (this.useCache) {
+      this.cache.set(container.type, container)
+    }
+
     return container
   }
 
-  private async fetchRawConfigFromStorage(type: string): Promise<object | null> {
-    const blob = this.containerClient.getBlobClient(this.getBlobPath(type))
+  private async fetchRawFromStorage(type: string): Promise<object | null> {
+    const blob = this.configurationContainerClient.getBlobClient(this.getBlobPath(type))
     const exists = await blob.exists()
     if (!exists) {
       return null

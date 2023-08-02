@@ -1,7 +1,9 @@
-import { ContainerClient } from '@azure/storage-blob'
+import { AppendBlobClient, BlobDownloadResponseParsed, BlobServiceClient, ContainerClient } from '@azure/storage-blob'
+import { STORAGE_CONNECTION, STORAGE_DATA_CONTAINER } from '../environment'
+import { DataClient } from '../model'
 
 export type StorageParams = {
-  readonly containerClient: ContainerClient
+  readonly dataClient: DataClient
   readonly blobPath: string
 }
 
@@ -18,14 +20,21 @@ export type BlobPathParams = {
   readonly includeMinutes?: boolean
 }
 
-export const appendToBlob = async (params: StorageWriteParams): Promise<void> => {
-  const { containerClient, blobPath, content } = params
-  const client = containerClient.getAppendBlobClient(blobPath)
+export const createDataClient = (): ContainerClient => BlobServiceClient
+  .fromConnectionString(STORAGE_CONNECTION)
+  .getContainerClient(STORAGE_DATA_CONTAINER)
+
+export const appendToDataBlob = async (params: StorageWriteParams): Promise<void> => {
+  const { dataClient, blobPath, content } = params
+  const client = getDataBlobClient(dataClient, blobPath)
   await client.createIfNotExists()
   await client.appendBlock(content, content.length)
 }
 
-export const createBlobPath = (params: BlobPathParams): string => {
+export const readDataBlob = async (dataClient: DataClient, path: string): Promise<Buffer> =>
+  getDataBlobClient(dataClient, path).downloadToBuffer()
+
+export const createDataBlobPath = (params: BlobPathParams): string => {
   const { type, tag, timestamp, includeMinutes, dataFileName, fileExtension } = params
   const parts = [`type=${type}`]
   if (tag) {
@@ -47,3 +56,9 @@ export const createBlobPath = (params: BlobPathParams): string => {
   parts.push(`${dataFileName}.${fileExtension}`)
   return parts.join('/')
 }
+
+export const dataBlobExists = async (dataClient: DataClient, path: string): Promise<boolean> =>
+  getDataBlobClient(dataClient, path).exists()
+
+const getDataBlobClient = (dataClient: DataClient, path: string): AppendBlobClient =>
+  dataClient.getAppendBlobClient(path)

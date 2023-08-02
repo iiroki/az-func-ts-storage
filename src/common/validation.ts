@@ -1,5 +1,16 @@
 import { z } from 'zod'
-import { DataIngestion } from '../model'
+import { DataIngestion, DataRequestParams } from '../model'
+
+export const zInt = z.number().int()
+export const zFloat = z.number()
+export const zString = z.string()
+export const zTimestamp = z.string().datetime({ offset: true })
+
+export const zDataRequestParams: z.ZodType<DataRequestParams> = z.object({
+  from: zTimestamp,
+  to: zTimestamp,
+  tag: z.string().optional()
+})
 
 export const zDataIngestion: z.ZodType<DataIngestion> = z.object({
   type: z.string(),
@@ -9,8 +20,7 @@ export const zDataIngestion: z.ZodType<DataIngestion> = z.object({
 
 export const zDataTypeConfiguration = z.object({
   useTags: z.boolean().default(false),
-  timestampPrecision: z.union([z.literal('hour'), z.literal('minute')]).default('minute'),
-  dataFileName: z.string().default('data'),
+  blobPathTimestamp: z.union([z.literal('day'), z.literal('hour')]).default('day'),
   schema: z.array(z.object({
     key: z.string(),
     type: z.union([z.literal('int'), z.literal('float'), z.literal('string'), z.literal('timestamp')]),
@@ -18,8 +28,3 @@ export const zDataTypeConfiguration = z.object({
     isTimestamp: z.boolean().default(false)
   }))
 })
-
-export const zInt = z.number().int()
-export const zFloat = z.number()
-export const zString = z.string()
-export const zTimestamp = z.string().datetime({ offset: true })

@@ -1,51 +1,51 @@
 # Azure Functions Time Series Storage
 
-**_Azure Functions Time Series Storage_** is a time series data storage implemented Node.js, Azure Functions and Azure storage account (Blob Storage, Queue Storage).
+**_Azure Functions Time Series Storage_** (`az-func-ts-stroage`) is a simple time series data storage
+implemented with Node.js, Azure Functions and Azure storage account (Blob Storage, Queue Storage).
 
-**_Azure Functions Time Series Storage_** enables storing time series data of multiple types and querying it with HTTP API using 
+Main features of **_Azure Functions Time Series Storage_** include:
+- Data type definitions with schema validation
+    - (TODO) HTTP API for modifying data types
+- Data ingestion with Azure Queue Storage or HTTP API
+- HTTP API for querying data, tags and configurations (data types)
+- Hierarchical Azure Blob Storage directory structure.
+
+A detailed description of the features can be found under [Features](#features).
+
+**Content of this README:**
+- [Quickstart](#quickstart)
+- [Features](#features)
+- [Configuration](#configuration)
 
 ## Quickstart
 
-TODO
+1. Create Azure storage account for Blob and Queue Storage.
+    - [Create Azure Storage account](https://learn.microsoft.com/en-us/azure/storage/common/storage-account-create)
+    - Use [Azurite](https://hub.docker.com/_/microsoft-azure-storage-azurite) to emulate Azure storage account.
+2. Fill the configuration to `local.settings.json` (create if needed) in the project root.
+    - See [Configuration](#configuration) for the required variables.
+3. Install npm packages: `npm i`
+4. Start the application: `npm start`
 
 ## Features
 
 ### Data Types
 
-- Data types can be defined with JSON files (see [Data types](#data-types)).
+- Data types can be defined with JSON files.
+    - The JSON files of data type definitions are stored in another container in the same Storage account as data.
+    - See [Data Type Configuration](#data-type-configuration) for the schema.
 - Data type definitions are used in the following:
-    - Schemas are used to validate the incoming data.
-    - Schemas are used to parse data from the storage.
+    - Schemas are used to validate the incoming data and parse the data during reading.
+    - Whether the data should be stored per tag (easier to query data from a specific tag).
+    - Define the timestamp precision used in data blob paths (= divide data to blobs per day or per hour).
 
 ### Data Ingestion
 
-- Data can be ingested with the following ways:
-    - Queue Storage
-- The incoming data is stored as gzipped CSV files in Blob Storage.
-- The stored blobs use a hierarchical namespace:
-    - `type=<dataType>`
-    - `tag=<tag>` (OPTIONAL)
-    - `year=<year>`
-    - `month=<month>`
-    - `day=<day>`
-    - `hour=<hour>` (OPTIONAL)
-    - `minute=<minute>` (OPTIONAL)
-    - Example: `type=TestType/tag=TestTag/year=2023/month=7/day=25/hour=15/minute=19/data.csv.gz`
-
-### HTTP API
-
-#### Query Data
-
-- TODO: Query data types
-- TODO: Query data (with filters)
-
-#### Manage Data Types
-
 TODO
 
-## Ingestion
+#### Data Ingestion JSON Format
 
-### Queue Trigger
+The same format is used by both Queue Storage and HTTP API data ingestion:
 
 ```json
 {
@@ -58,9 +58,26 @@ TODO
 }
 ```
 
+**NOTE**  
+The tuples inside `data` must respect the data type schema definition, otherwise a validation error is raised!
+
+### HTTP
+
+#### Data API
+
+- TODO: Query data types
+
+#### Tag API
+
+TODO
+
+#### Ingestion API
+
+TODO
+
 ## Configuration
 
-### Environment Variables
+Use `local.settings.json` to define the configuration.
 
 | Key | Description | Required | Default |
 | ----- | ----- | :-----: | ----- |
@@ -69,15 +86,31 @@ TODO
 | `STORAGE_CONFIGURATION_CONTAINER` | Blob Storage configuration container name | - | `configuration` |
 | `STORAGE_INGESTION_QUEUE` | Queue Storage ingestion queue name | - | `ingestion` |
 
-### Data Types
+A well-known connection string that can be used when emulating Azure Storage account with Azurite:
+```
+DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://127.0.0.1:10000/devstoreaccount1;QueueEndpoint=http://127.0.0.1:10001/devstoreaccount1;TableEndpoint=http://127.0.0.1:10002/devstoreaccount1;
+```
 
-Data type configurations are stored in a separate Blob Storage container from the actual time series data.
+### Data Type Configuration
 
+| Key | Description | Required | Default |
+| ----- | ----- | :-----: | ----- |
+| `useTags` | Whether to separate data per tag. | - | `false` |
+| `blobPathTimestamp` | Blob Storage path timestamp precision, either `day` or `hour`. | - | `day` |
+| `schema` | Data type schema definition, see below. | &check; | - |
+| `schema.key` | Key of the value | &check; | - |
+| `schema.type` | Type of the value (`int`, `float`, `string` or `timestamp`) | &check; | - |
+| `schema.isTimestamp`* | Timestamp of the value | - | `false` |
+| `schema.isRequired` | Is the value required | - | `true` |
+
+**\*** = Used to define the data blob to which the incoming value should be stored.
+There can only be one value marked as the timestamp and its type must be `timestamp`.
+
+For example, a data type named `Example` can be defined with `Example.json`:
 ```json
 {
     "useTags": true,
-    "timestampPrecision": "minute",
-    "dataFileName": "data",
+    "blobPathTimestamp": "hour",
     "schema": [
         { "key": "ts", "type": "timestamp", "isTimestamp": true },
         { "key": "value", "type": "number", "isRequired": true },
@@ -86,4 +119,4 @@ Data type configurations are stored in a separate Blob Storage container from th
 }
 ```
 
-Data type configuration version is stored as blob metadata.
+Data type configuration version is stored as blob metadata. (TODO)
